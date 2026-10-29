@@ -3,8 +3,21 @@ const form = document.querySelector("#problem-form");
 const problemList = document.querySelector("#problem-list");
 const problemCount = document.querySelector("#problem-count");
 const statusMessage = document.querySelector("#problem-status");
-const partyMarks = [document.querySelector("#header-party-mark")].filter(Boolean);
+const partyLogo = document.querySelector(".party-mark img");
+const partyMarkFallback = document.querySelector(".party-mark-fallback");
 let problems = [];
+
+function showImageWhenLoaded(image, onLoad) {
+  const revealImage = () => {
+    image.classList.remove("hidden");
+    onLoad();
+  };
+
+  image.addEventListener("load", revealImage, { once: true });
+  if (image.complete && image.naturalWidth > 0) revealImage();
+}
+
+showImageWhenLoaded(partyLogo, () => partyMarkFallback.classList.add("hidden"));
 
 function showStatus(message, isError = false) {
   statusMessage.textContent = message;
@@ -130,20 +143,6 @@ form.addEventListener("submit", (event) => {
   showStatus("Issue saved in this browser.");
   document.querySelector("#problem-title").focus();
 });
-
-try {
-  const partyLogo = localStorage.getItem("election-campaign-party-logo");
-  if (partyLogo) {
-    partyMarks.forEach((mark) => {
-      const image = document.createElement("img");
-      image.src = partyLogo;
-      image.alt = "";
-      mark.replaceChildren(image);
-    });
-  }
-} catch (error) {
-  console.error("Unable to load the saved party logo:", error);
-}
 
 problems = readProblems();
 renderProblems();
