@@ -2,8 +2,11 @@
   "name": "election-campaign-site",
   "version": "1.0.0",
   "private": true,
-  "description": "A static election campaign website with a local Node.js server",
+  "description": "A static election campaign website with a PostgreSQL-backed Node.js server",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   }
 }

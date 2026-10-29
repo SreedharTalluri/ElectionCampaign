@@ -43,21 +43,49 @@
             <option value="Other">Other</option>
           </select>
 
-          <label for="problem-location">Location <span>(optional)</span></label>
-          <input id="problem-location" name="location" type="text" maxlength="100" placeholder="Neighborhood or street">
+          <label for="problem-division">Division</label>
+          <input id="problem-division" name="division" type="text" maxlength="100" required placeholder="Enter your division">
+
+          <label for="problem-location">Neighborhood or street <span>(optional)</span></label>
+          <input id="problem-location" name="location" type="text" maxlength="100" placeholder="Add a specific location">
 
           <label for="problem-description">Details</label>
           <textarea id="problem-description" name="description" maxlength="1000" required placeholder="How does this affect your community?"></textarea>
 
           <button class="problems-button" type="submit">Save problem <span aria-hidden="true">→</span></button>
-          <p class="problem-privacy">Saved only in this browser on this device.</p>
+          <p class="problem-privacy">Problems are stored in the shared campaign database.</p>
           <p class="problem-status" id="problem-status" role="status" aria-live="polite"></p>
         </form>
 
         <section class="problem-list-panel" aria-labelledby="saved-problems-title">
           <div class="problem-list-heading">
-            <h2 id="saved-problems-title">Saved problems</h2>
+            <h2 id="saved-problems-title">Track local problems</h2>
             <span class="problem-count" id="problem-count">0</span>
+          </div>
+          <form class="admin-login" id="admin-login">
+            <label for="admin-password">Admin password to update or remove problems</label>
+            <div class="admin-login-controls">
+              <input id="admin-password" type="password" autocomplete="current-password" required>
+              <button class="admin-login-button" type="submit">Enable controls</button>
+            </div>
+            <p class="problem-status" id="admin-status" role="status" aria-live="polite"></p>
+          </form>
+          <div class="problem-filters">
+            <label>
+              Division
+              <select id="division-filter">
+                <option value="">All divisions</option>
+              </select>
+            </label>
+            <label>
+              Status
+              <select id="status-filter">
+                <option value="">All statuses</option>
+                <option value="Open">Open</option>
+                <option value="In progress">In progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </label>
           </div>
           <div class="problem-list" id="problem-list" aria-live="polite"></div>
         </section>
