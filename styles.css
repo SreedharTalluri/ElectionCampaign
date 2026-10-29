@@ -1,0 +1,91 @@
+:root {
+  color-scheme: light;
+  --paper: #f5f2eb;
+  --paper-deep: #ebe6db;
+  --ink: #172521;
+  --muted: #737870;
+  --red: #c84936;
+  --green: #21463c;
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: "DM Sans", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+.hidden { display: none !important; }
+
+.site-header { min-height: 76px; padding: 14px 8%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(23,37,33,.12); }
+.brand { display: inline-flex; align-items: center; gap: 11px; font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+.party-mark { width: 35px; height: 35px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: var(--red); color: white; font-family: var(--serif); }
+.party-mark img { width: 100%; height: 100%; object-fit: contain; background: white; }
+.problems-link { font-size: 12px; font-weight: 600; }
+.problems-link span { padding-left: 8px; color: var(--red); }
+
+.campaign { width: min(1050px, 84%); min-height: 490px; margin: 55px auto 38px; display: grid; grid-template-columns: 1fr .8fr; align-items: center; gap: 8%; }
+.campaign-message { padding: 35px 0; }
+.eyebrow { color: var(--red); font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+h1, h2 { font-family: var(--serif); font-weight: 500; letter-spacing: -.035em; }
+.campaign h1 { max-width: 610px; margin: 22px 0 30px; font-size: clamp(48px, 6vw, 78px); line-height: 1.08; }
+.campaign h1 em, .problems-page h1 em { color: var(--red); font-weight: 500; }
+.problems-button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 46px; padding: 12px 17px; border: 0; background: var(--green); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
+.problems-button:hover { background: var(--ink); }
+.problems-button span { color: #efaa8d; font-size: 16px; }
+.candidate-image { position: relative; min-height: 390px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg, #d6c6ae, #879084 67%, #536558); color: white; }
+.candidate-placeholder { font-family: var(--serif); font-size: 22px; }
+.candidate-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+
+.campaign-settings { width: min(820px, 84%); margin: 0 auto 65px; padding-top: 24px; border-top: 1px solid rgba(23,37,33,.14); display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.upload-item { display: flex; align-items: center; gap: 16px; }
+.upload-preview { width: 76px; height: 76px; flex: 0 0 76px; display: grid; place-items: center; overflow: hidden; }
+.upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+.photo-preview { background: linear-gradient(145deg, #d6c6ae, #879084 67%, #536558); color: white; }
+.logo-preview { background: var(--paper-deep); color: var(--red); }
+.preview-initials, .logo-fallback { font-family: var(--serif); font-size: 15px; }
+.upload-item h2 { margin: 0 0 10px; font-size: 18px; }
+.upload-button { display: inline-block; padding: 8px 11px; border: 1px solid rgba(23,37,33,.25); cursor: pointer; font-size: 10px; font-weight: 700; }
+.upload-button:hover { border-color: var(--red); color: var(--red); }
+.file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; }
+.file-input:focus-visible + * { outline: 2px solid var(--red); }
+.upload-status { grid-column: 1 / -1; min-height: 16px; margin: 0; color: var(--green); font-size: 11px; }
+.upload-status.error { color: var(--red); }
+
+.problems-page { width: min(960px, 84%); min-height: calc(100vh - 76px); margin: 0 auto; padding: 65px 0 80px; }
+.problems-page > h1 { margin: 0; font-size: clamp(42px, 5vw, 64px); }
+.page-intro { margin: 14px 0 34px; color: #626961; font-size: 14px; }
+.problems-layout { display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 1.2fr); gap: 20px; align-items: start; }
+.problem-form, .problem-list-panel { padding: 23px; border: 1px solid rgba(23,37,33,.15); background: rgba(255,255,255,.3); }
+.problem-form > label { display: block; margin: 0 0 7px; color: #555d55; font-size: 11px; font-weight: 700; }
+.problem-form > input, .problem-form > select, .problem-form > textarea { width: 100%; margin-bottom: 16px; padding: 11px 12px; border: 1px solid rgba(23,37,33,.2); background: var(--paper); color: var(--ink); font-size: 12px; }
+.problem-form > textarea { min-height: 95px; resize: vertical; }
+.problem-form > input:focus, .problem-form > select:focus, .problem-form > textarea:focus { outline: 2px solid rgba(200,73,54,.58); outline-offset: 1px; }
+.problem-form .problems-button { width: 100%; }
+.problem-privacy { margin: 10px 0 0; color: #777d75; font-size: 10px; }
+.problem-status { min-height: 15px; margin: 10px 0 0; color: var(--green); font-size: 10px; }
+.problem-status.error { color: var(--red); }
+.problem-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+.problem-list-heading h2 { margin: 0; font-size: 23px; }
+.problem-count { min-width: 26px; padding: 6px 9px; border-radius: 20px; background: var(--paper-deep); text-align: center; font-size: 10px; }
+.problem-list { display: grid; gap: 10px; }
+.problem-entry { padding: 15px; border: 1px solid rgba(23,37,33,.12); background: var(--paper); }
+.problem-entry-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.problem-entry h3 { margin: 0 0 7px; font-family: var(--serif); font-size: 18px; font-weight: 500; overflow-wrap: anywhere; }
+.problem-entry-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: #747a72; font-size: 9px; }
+.problem-category { color: var(--red); font-weight: 700; }
+.problem-description { margin: 12px 0 0; color: #596159; font-size: 11px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.problem-delete { flex: 0 0 auto; padding: 6px 8px; border: 1px solid rgba(23,37,33,.2); background: transparent; color: #656b63; cursor: pointer; font-size: 9px; }
+.problem-delete:hover { border-color: var(--red); color: var(--red); }
+.problem-empty { padding: 28px 16px; border: 1px dashed rgba(23,37,33,.2); color: #747a72; text-align: center; font-size: 11px; }
+
+@media (max-width: 650px) {
+  .site-header { min-height: 66px; padding: 12px 6%; }
+  .campaign { width: 86%; min-height: 0; margin: 35px auto 28px; grid-template-columns: 1fr; gap: 20px; }
+  .campaign-message { padding: 10px 0; }
+  .campaign h1 { margin: 16px 0 22px; font-size: clamp(45px, 12vw, 65px); }
+  .candidate-image { min-height: 300px; }
+  .campaign-settings { width: 86%; margin-bottom: 38px; grid-template-columns: 1fr; gap: 15px; }
+  .problems-page { width: 88%; padding: 42px 0 55px; }
+  .problems-layout { grid-template-columns: 1fr; gap: 14px; }
+  .problem-form, .problem-list-panel { padding: 18px; }
+}

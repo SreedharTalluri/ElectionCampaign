@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f2eb">
+    <meta name="description" content="Please vote for our candidate for a better future.">
+    <title>Vote for a Better Future</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Campaign home">
+        <span class="party-mark" id="header-party-mark" aria-hidden="true">P</span>
+        <span>OUR CANDIDATE</span>
+      </a>
+      <a class="problems-link" href="local-problems.html">Share a local problem <span aria-hidden="true">→</span></a>
+    </header>
+
+    <main>
+      <section class="campaign">
+        <div class="campaign-message">
+          <p class="eyebrow">Your voice. Our future.</p>
+          <h1>Please vote for our candidate for a <em>better future.</em></h1>
+          <a class="problems-button" href="local-problems.html">Tell us about a local problem <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="candidate-image">
+          <div class="candidate-placeholder" id="candidate-photo-placeholder" aria-hidden="true">Candidate photo</div>
+          <img class="candidate-photo hidden" id="candidate-photo" alt="Candidate">
+        </div>
+      </section>
+
+      <section class="campaign-settings" aria-label="Campaign images">
+        <div class="upload-item">
+          <div class="upload-preview photo-preview" aria-hidden="true">
+            <span class="preview-initials">Photo</span>
+            <img id="photo-preview-image" class="hidden" alt="">
+          </div>
+          <div>
+            <h2>Candidate photo</h2>
+            <label class="upload-button" for="candidate-upload">Choose photo</label>
+            <input class="file-input" id="candidate-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+          </div>
+        </div>
+        <div class="upload-item">
+          <div class="upload-preview logo-preview" aria-hidden="true">
+            <span class="logo-fallback">Party</span>
+            <img id="logo-preview-image" class="hidden" alt="">
+          </div>
+          <div>
+            <h2>Party logo</h2>
+            <label class="upload-button" for="party-upload">Choose logo</label>
+            <input class="file-input" id="party-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">
+          </div>
+        </div>
+        <p class="upload-status" id="upload-status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

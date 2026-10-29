@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f2eb">
+    <meta name="description" content="Share a local problem with the campaign.">
+    <title>Share a Local Problem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Campaign home">
+        <span class="party-mark" id="header-party-mark" aria-hidden="true">P</span>
+        <span>OUR CANDIDATE</span>
+      </a>
+      <a class="problems-link" href="index.html">← Back to campaign</a>
+    </header>
+
+    <main class="problems-page">
+      <h1>Tell us about a <em>local problem.</em></h1>
+      <p class="page-intro">What needs attention in your community?</p>
+      <div class="problems-layout">
+        <form class="problem-form" id="problem-form">
+          <label for="problem-title">Problem</label>
+          <input id="problem-title" name="title" type="text" maxlength="100" required placeholder="Briefly describe the issue">
+
+          <label for="problem-category">Category</label>
+          <select id="problem-category" name="category" required>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Housing">Housing</option>
+            <option value="Public safety">Public safety</option>
+            <option value="Environment">Environment</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Education">Education</option>
+            <option value="Transport">Transport</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="problem-location">Location <span>(optional)</span></label>
+          <input id="problem-location" name="location" type="text" maxlength="100" placeholder="Neighborhood or street">
+
+          <label for="problem-description">Details</label>
+          <textarea id="problem-description" name="description" maxlength="1000" required placeholder="How does this affect your community?"></textarea>
+
+          <button class="problems-button" type="submit">Save problem <span aria-hidden="true">→</span></button>
+          <p class="problem-privacy">Saved only in this browser on this device.</p>
+          <p class="problem-status" id="problem-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="problem-list-panel" aria-labelledby="saved-problems-title">
+          <div class="problem-list-heading">
+            <h2 id="saved-problems-title">Saved problems</h2>
+            <span class="problem-count" id="problem-count">0</span>
+          </div>
+          <div class="problem-list" id="problem-list" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+    <script src="local-problems.js"></script>
+  </body>
+</html>
