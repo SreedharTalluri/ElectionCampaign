@@ -49,11 +49,17 @@
           <label for="problem-location">Neighborhood or street <span>(optional)</span></label>
           <input id="problem-location" name="location" type="text" maxlength="100" placeholder="Add a specific location">
 
+          <label for="problem-mobile">Mobile number <span>(optional)</span></label>
+          <input id="problem-mobile" name="mobileNumber" type="tel" maxlength="32" autocomplete="tel" placeholder="For follow-up">
+
+          <label for="problem-email">Email <span>(optional)</span></label>
+          <input id="problem-email" name="emailAddress" type="email" maxlength="254" autocomplete="email" placeholder="For follow-up">
+
           <label for="problem-description">Details</label>
           <textarea id="problem-description" name="description" maxlength="1000" required placeholder="How does this affect your community?"></textarea>
 
           <button class="problems-button" type="submit">Save problem <span aria-hidden="true">→</span></button>
-          <p class="problem-privacy">Problems are stored in the shared campaign database.</p>
+          <p class="problem-privacy">Problems are stored in the shared database. Any mobile number or email you provide will be visible to all visitors.</p>
           <p class="problem-status" id="problem-status" role="status" aria-live="polite"></p>
         </form>
 

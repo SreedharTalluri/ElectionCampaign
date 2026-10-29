@@ -11,6 +11,16 @@ const statusFilter = document.querySelector("#status-filter");
 const partyLogo = document.querySelector(".party-mark img");
 const partyMarkFallback = document.querySelector(".party-mark-fallback");
 const PROBLEM_STATUSES = ["Open", "In progress", "Resolved"];
+const PROBLEM_CATEGORIES = [
+  "Infrastructure",
+  "Housing",
+  "Public safety",
+  "Environment",
+  "Healthcare",
+  "Education",
+  "Transport",
+  "Other",
+];
 let problems = [];
 let adminToken = "";
 
@@ -128,6 +138,83 @@ function updateDivisionFilter() {
   divisionFilter.value = divisions.includes(selectedDivision) ? selectedDivision : "";
 }
 
+function addContactLink(container, label, value, href) {
+  if (!value) return;
+  const item = makeElement("p", "problem-contact");
+  item.append(makeElement("strong", "", `${label}: `));
+  const link = makeElement("a", "", value);
+  link.href = href;
+  item.append(link);
+  container.append(item);
+}
+
+function addEditField(form, labelText, name, value, type = "text", required = false, maxLength = 100) {
+  const label = makeElement("label", "problem-edit-field", labelText);
+  const input = document.createElement(type === "textarea" ? "textarea" : "input");
+  if (type !== "textarea") input.type = type;
+  input.name = name;
+  input.value = value || "";
+  input.maxLength = maxLength;
+  input.required = required;
+  if (name === "description") input.rows = 3;
+  label.append(input);
+  form.append(label);
+}
+
+function createEditForm(problem, details) {
+  const form = makeElement("form", "problem-edit-form");
+  form.noValidate = false;
+  addEditField(form, "Problem", "title", problem.title, "text", true, 100);
+
+  const categoryLabel = makeElement("label", "problem-edit-field", "Category");
+  const categorySelect = document.createElement("select");
+  categorySelect.name = "category";
+  categorySelect.required = true;
+  PROBLEM_CATEGORIES.forEach((category) => {
+    const option = makeElement("option", "", category);
+    option.value = category;
+    categorySelect.append(option);
+  });
+  categorySelect.value = problem.category;
+  categoryLabel.append(categorySelect);
+  form.append(categoryLabel);
+
+  addEditField(form, "Division", "division", problem.division, "text", true, 100);
+  addEditField(form, "Neighborhood or street", "location", problem.location, "text", false, 100);
+  addEditField(form, "Mobile number", "mobileNumber", problem.mobileNumber, "tel", false, 32);
+  addEditField(form, "Email", "emailAddress", problem.emailAddress, "email", false, 254);
+  addEditField(form, "Assigned MLA", "assignedMla", problem.assignedMla, "text", false, 120);
+  addEditField(form, "Details", "description", problem.description, "textarea", true, 1000);
+
+  const statusLabel = makeElement("label", "problem-edit-field", "Status");
+  const statusSelect = document.createElement("select");
+  statusSelect.name = "status";
+  PROBLEM_STATUSES.forEach((status) => {
+    const option = makeElement("option", "", status);
+    option.value = status;
+    statusSelect.append(option);
+  });
+  statusSelect.value = problem.status;
+  statusLabel.append(statusSelect);
+  form.append(statusLabel);
+
+  const actions = makeElement("div", "problem-edit-actions");
+  const saveButton = makeElement("button", "admin-login-button", "Save changes");
+  saveButton.type = "submit";
+  const cancelButton = makeElement("button", "problem-delete", "Cancel");
+  cancelButton.type = "button";
+  cancelButton.addEventListener("click", () => {
+    details.open = false;
+  });
+  actions.append(saveButton, cancelButton);
+  form.append(actions);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveProblemEdits(problem.id, new FormData(form), saveButton);
+  });
+  return form;
+}
+
 function renderProblems() {
   updateDivisionFilter();
   problemList.replaceChildren();
@@ -149,43 +236,41 @@ function renderProblems() {
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
     .forEach((problem) => {
       const entry = makeElement("article", "problem-entry");
-      const top = makeElement("div", "problem-entry-top");
-      const heading = document.createElement("div");
-      heading.append(makeElement("h3", "", problem.title));
-
+      const heading = makeElement("h3", "", problem.title);
       const meta = makeElement("div", "problem-entry-meta");
-      meta.append(makeElement("span", "problem-category", problem.category));
-      meta.append(makeElement("span", "", problem.division || "Division not specified"));
+      meta.append(
+        makeElement("span", "problem-category", problem.category),
+        makeElement("span", "", problem.division || "Division not specified"),
+      );
       if (problem.location) meta.append(makeElement("span", "", problem.location));
-
       const date = new Date(problem.createdAt);
       meta.append(makeElement("time", "", Number.isNaN(date.getTime()) ? "" : date.toLocaleString()));
-      heading.append(meta);
+      const status = makeElement("span", "problem-status-badge", problem.status);
+      const assignment = makeElement("p", "problem-assignment");
+      assignment.append(makeElement("strong", "", "Assigned MLA: "));
+      assignment.append(document.createTextNode(problem.assignedMla || "Not assigned"));
+      const contacts = makeElement("div", "problem-contacts");
+      addContactLink(contacts, "Mobile", problem.mobileNumber, `tel:${problem.mobileNumber.replace(/[^\d+]/g, "")}`);
+      addContactLink(contacts, "Email", problem.emailAddress, `mailto:${problem.emailAddress}`);
 
-      const statusControl = makeElement("label", "problem-status-control");
-      statusControl.append(makeElement("span", "", "Status"));
-      const statusSelect = document.createElement("select");
-      statusSelect.setAttribute("aria-label", `Status for ${problem.title}`);
-      PROBLEM_STATUSES.forEach((status) => {
-        const option = makeElement("option", "", status);
-        option.value = status;
-        statusSelect.append(option);
+      const details = makeElement("details", "problem-edit");
+      details.open = false;
+      const summary = makeElement("summary", "", "Edit problem");
+      summary.setAttribute("aria-disabled", String(!adminToken));
+      if (!adminToken) summary.classList.add("disabled");
+      summary.addEventListener("click", (event) => {
+        if (!adminToken) event.preventDefault();
       });
-      statusSelect.value = problem.status;
-      statusSelect.disabled = !adminToken;
-      statusSelect.addEventListener("change", () => updateProblemStatus(problem.id, statusSelect.value));
-      statusControl.append(statusSelect);
-
+      details.append(summary, createEditForm(problem, details));
       const removeButton = makeElement("button", "problem-delete", "Remove");
       removeButton.type = "button";
       removeButton.disabled = !adminToken;
       removeButton.setAttribute("aria-label", `Remove issue: ${problem.title}`);
       removeButton.addEventListener("click", () => removeProblem(problem.id));
-
       const actions = makeElement("div", "problem-actions");
-      actions.append(statusControl, removeButton);
-      top.append(heading, actions);
-      entry.append(top, makeElement("p", "problem-description", problem.description));
+      actions.append(details, removeButton);
+      entry.append(heading, meta, status, assignment, contacts);
+      entry.append(makeElement("p", "problem-description", problem.description), actions);
       problemList.append(entry);
     });
 }
@@ -222,30 +307,26 @@ async function removeProblem(id) {
   }
 }
 
-async function updateProblemStatus(id, status) {
-  if (!PROBLEM_STATUSES.includes(status)) {
-    showStatus("Choose a valid problem status.", true);
-    renderProblems();
-    return;
-  }
-
+async function saveProblemEdits(id, formData, saveButton) {
+  const problem = Object.fromEntries(formData.entries());
+  saveButton.disabled = true;
   try {
     const updatedProblem = await apiRequest(`/api/problems/${encodeURIComponent(id)}`, {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(problem),
       admin: true,
     });
-    problems = problems.map((problem) => problem.id === id ? updatedProblem : problem);
+    problems = problems.map((item) => item.id === id ? updatedProblem : item);
     renderProblems();
-    showStatus("Problem status updated in the shared database.");
+    showStatus("Problem details and MLA assignment updated.");
   } catch (error) {
-    renderProblems();
     if (error.message.includes("authorization")) {
       adminToken = "";
       renderProblems();
       adminStatusMessage.textContent = "Admin access expired. Enter the password again.";
       adminStatusMessage.classList.add("error");
     } else {
+      saveButton.disabled = false;
       showStatus(error.message, true);
     }
   }
@@ -284,6 +365,8 @@ form.addEventListener("submit", async (event) => {
     category: formData.get("category"),
     division: formData.get("division").trim(),
     location: formData.get("location").trim(),
+    mobileNumber: formData.get("mobileNumber").trim(),
+    emailAddress: formData.get("emailAddress").trim(),
     description: formData.get("description").trim(),
   };
 

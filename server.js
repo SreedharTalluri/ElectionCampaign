@@ -95,6 +95,9 @@ function validateProblem(body, { allowLegacy = false } = {}) {
   }
 
   const { title, category, division, location, description } = body;
+  const mobileNumber = body.mobileNumber === undefined ? "" : body.mobileNumber;
+  const emailAddress = body.emailAddress === undefined ? "" : body.emailAddress;
+  const assignedMla = body.assignedMla === undefined ? "" : body.assignedMla;
   if (typeof title !== "string" || title.trim().length === 0 || title.trim().length > 100) {
     throw new HttpError(400, "Problem title must be between 1 and 100 characters.");
   }
@@ -110,6 +113,16 @@ function validateProblem(body, { allowLegacy = false } = {}) {
   if (typeof description !== "string" || description.trim().length === 0 || description.trim().length > 1000) {
     throw new HttpError(400, "Problem details must be between 1 and 1000 characters.");
   }
+  if (typeof mobileNumber !== "string" || mobileNumber.length > 32 || (mobileNumber && !/^[+()\d.\-\s]+$/.test(mobileNumber))) {
+    throw new HttpError(400, "Enter a valid mobile number of up to 32 characters.");
+  }
+  if (typeof emailAddress !== "string" || emailAddress.length > 254
+      || (emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress))) {
+    throw new HttpError(400, "Enter a valid email address of up to 254 characters.");
+  }
+  if (typeof assignedMla !== "string" || assignedMla.trim().length > 120) {
+    throw new HttpError(400, "Assigned MLA name must be 120 characters or fewer.");
+  }
 
   const problem = {
     title: title.trim(),
@@ -117,6 +130,9 @@ function validateProblem(body, { allowLegacy = false } = {}) {
     division: division.trim(),
     location: location.trim(),
     description: description.trim(),
+    mobileNumber: mobileNumber.trim(),
+    emailAddress: emailAddress.trim(),
+    assignedMla: assignedMla.trim(),
     status: body.status === undefined ? "Open" : body.status,
     createdAt: body.createdAt === undefined ? new Date().toISOString() : body.createdAt,
     legacyId: body.legacyId,
@@ -159,6 +175,9 @@ function mapProblem(row) {
     division: row.division,
     location: row.location,
     description: row.description,
+    mobileNumber: row.mobile_number,
+    emailAddress: row.email_address,
+    assignedMla: row.assigned_mla,
     status: row.status,
     createdAt: row.created_at.toISOString(),
   };
@@ -179,7 +198,8 @@ async function handleApi(request, response, pathname) {
 
   if (pathname === "/api/problems" && request.method === "GET") {
     const result = await pool.query(
-      `SELECT id, title, category, division, location, description, status, created_at
+      `SELECT id, title, category, division, location, description, mobile_number, email_address,
+              assigned_mla, status, created_at
        FROM local_problems
        ORDER BY created_at DESC, id DESC`,
     );
@@ -189,13 +209,19 @@ async function handleApi(request, response, pathname) {
 
   if (pathname === "/api/problems" && request.method === "POST") {
     const body = await readJsonBody(request);
-    const problem = validateProblem(body, { allowLegacy: Boolean(body && body.legacyId) });
+    const isLegacyMigration = Boolean(body && body.legacyId);
+    const problem = validateProblem(body, { allowLegacy: isLegacyMigration });
+    problem.status = "Open";
+    problem.assignedMla = "";
+    if (!isLegacyMigration) problem.createdAt = new Date().toISOString();
     const result = await pool.query(
       `INSERT INTO local_problems
-         (legacy_id, title, category, division, location, description, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (legacy_id, title, category, division, location, description, mobile_number, email_address,
+          assigned_mla, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT (legacy_id) DO UPDATE SET legacy_id = EXCLUDED.legacy_id
-       RETURNING id, title, category, division, location, description, status, created_at`,
+       RETURNING id, title, category, division, location, description, mobile_number, email_address,
+                 assigned_mla, status, created_at`,
       [
         problem.legacyId || null,
         problem.title,
@@ -203,6 +229,9 @@ async function handleApi(request, response, pathname) {
         problem.division,
         problem.location,
         problem.description,
+        problem.mobileNumber,
+        problem.emailAddress,
+        problem.assignedMla,
         problem.status,
         problem.createdAt,
       ],
@@ -219,14 +248,40 @@ async function handleApi(request, response, pathname) {
   if (problemRoute && request.method === "PATCH") {
     requireAdmin(request);
     const body = await readJsonBody(request);
-    if (!body || typeof body !== "object" || Array.isArray(body) || !statuses.has(body.status)) {
-      throw new HttpError(400, "Choose a valid problem status.");
+    if (body && typeof body === "object" && !Array.isArray(body)
+        && Object.keys(body).length === 1 && Object.hasOwn(body, "status")) {
+      if (!statuses.has(body.status)) throw new HttpError(400, "Choose a valid problem status.");
+      const result = await pool.query(
+        `UPDATE local_problems SET status = $1 WHERE id = $2
+         RETURNING id, title, category, division, location, description, mobile_number, email_address,
+                   assigned_mla, status, created_at`,
+        [body.status, problemRoute[1]],
+      );
+      if (result.rowCount === 0) throw new HttpError(404, "Problem not found.");
+      sendJson(response, 200, mapProblem(result.rows[0]));
+      return;
     }
 
+    const problem = validateProblem(body);
     const result = await pool.query(
-      `UPDATE local_problems SET status = $1 WHERE id = $2
-       RETURNING id, title, category, division, location, description, status, created_at`,
-      [body.status, problemRoute[1]],
+      `UPDATE local_problems
+       SET title = $1, category = $2, division = $3, location = $4, description = $5,
+           mobile_number = $6, email_address = $7, assigned_mla = $8, status = $9
+       WHERE id = $10
+       RETURNING id, title, category, division, location, description, mobile_number, email_address,
+                 assigned_mla, status, created_at`,
+      [
+        problem.title,
+        problem.category,
+        problem.division,
+        problem.location,
+        problem.description,
+        problem.mobileNumber,
+        problem.emailAddress,
+        problem.assignedMla,
+        problem.status,
+        problemRoute[1],
+      ],
     );
     if (result.rowCount === 0) throw new HttpError(404, "Problem not found.");
     sendJson(response, 200, mapProblem(result.rows[0]));
@@ -351,9 +406,18 @@ async function startServer() {
       division TEXT NOT NULL DEFAULT '' CHECK (char_length(division) <= 100),
       location TEXT NOT NULL DEFAULT '' CHECK (char_length(location) <= 100),
       description TEXT NOT NULL CHECK (char_length(description) BETWEEN 1 AND 1000),
+      mobile_number TEXT NOT NULL DEFAULT '',
+      email_address TEXT NOT NULL DEFAULT '',
+      assigned_mla TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In progress', 'Resolved')),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `);
+  await pool.query(`
+    ALTER TABLE local_problems
+      ADD COLUMN IF NOT EXISTS mobile_number TEXT NOT NULL DEFAULT '',
+      ADD COLUMN IF NOT EXISTS email_address TEXT NOT NULL DEFAULT '',
+      ADD COLUMN IF NOT EXISTS assigned_mla TEXT NOT NULL DEFAULT ''
   `);
 
   server.listen(port, "0.0.0.0", () => {
