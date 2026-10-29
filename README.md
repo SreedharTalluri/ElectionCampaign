@@ -7,7 +7,7 @@ The server requires a PostgreSQL database. Create a database, install the Node.j
 ```powershell
 npm install
 $env:DATABASE_URL = "postgresql://USER:PASSWORD@HOST:5432/DATABASE"
-$env:ADMIN_TOKEN = "use-a-long-random-secret"
+$env:ADMIN_TOKEN = "admin123"
 npm start
 ```
 
@@ -15,7 +15,9 @@ The server creates the `local_problems` table on startup. Keep database credenti
 
 ## Render deployment
 
-Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
+Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. If the service is already deployed and reports “Admin access is not configured,” open the web service in the Render Dashboard, go to **Environment**, add `ADMIN_TOKEN` with a long, unique secret value, then save the changes. Render will restart the service. Enter that same value in the problem page's admin password field.
+
+For local development, set `ADMIN_TOKEN` to a long, unique secret before starting the server. Never use the example placeholder as a real password or commit actual secrets to the repository. The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
 
 Problem reports can include a mobile number and email address. These contact details are optional, but any details submitted are visible to all visitors. Administrators can assign a report to an MLA by entering the MLA's name in the report editor.
 

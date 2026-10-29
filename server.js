@@ -186,7 +186,10 @@ function mapProblem(row) {
 async function handleApi(request, response, pathname) {
   if (pathname === "/api/admin/verify" && request.method === "POST") {
     if (!process.env.ADMIN_TOKEN) {
-      throw new HttpError(503, "Admin access is not configured on the server.");
+      throw new HttpError(
+        503,
+        "Admin access is not configured. In Render, set the ADMIN_TOKEN environment variable for the web service, then save and redeploy.",
+      );
     }
     const body = await readJsonBody(request);
     if (!body || !hasValidAdminToken(body.token)) {
