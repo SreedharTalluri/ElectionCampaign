@@ -3,8 +3,7 @@ const form = document.querySelector("#problem-form");
 const problemList = document.querySelector("#problem-list");
 const problemCount = document.querySelector("#problem-count");
 const statusMessage = document.querySelector("#problem-status");
-const adminLogin = document.querySelector("#admin-login");
-const adminPassword = document.querySelector("#admin-password");
+const adminSignIn = document.querySelector("#admin-sign-in");
 const adminStatusMessage = document.querySelector("#admin-status");
 const divisionFilter = document.querySelector("#division-filter");
 const statusFilter = document.querySelector("#status-filter");
@@ -320,6 +319,7 @@ async function removeProblem(id) {
   } catch (error) {
     if (error.message.includes("authorization")) {
       adminToken = "";
+      adminSignIn.textContent = "Admin sign in";
       renderProblems();
       adminStatusMessage.textContent = "Admin access expired. Enter the password again.";
       adminStatusMessage.classList.add("error");
@@ -344,6 +344,7 @@ async function saveProblemEdits(id, formData, saveButton) {
   } catch (error) {
     if (error.message.includes("authorization")) {
       adminToken = "";
+      adminSignIn.textContent = "Admin sign in";
       renderProblems();
       adminStatusMessage.textContent = "Admin access expired. Enter the password again.";
       adminStatusMessage.classList.add("error");
@@ -354,26 +355,40 @@ async function saveProblemEdits(id, formData, saveButton) {
   }
 }
 
-adminLogin.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const token = adminPassword.value;
-  const button = adminLogin.querySelector('button[type="submit"]');
-  button.disabled = true;
+adminSignIn.addEventListener("click", async () => {
+  if (adminToken) {
+    adminToken = "";
+    adminSignIn.textContent = "Admin sign in";
+    adminStatusMessage.textContent = "Admin controls signed out.";
+    adminStatusMessage.classList.remove("error");
+    renderProblems();
+    return;
+  }
+
+  const token = window.prompt("Enter the admin password configured in the server environment:");
+  if (token === null) return;
+  if (!token) {
+    adminStatusMessage.textContent = "Enter the admin password to enable admin controls.";
+    adminStatusMessage.classList.add("error");
+    return;
+  }
+
+  adminSignIn.disabled = true;
   try {
     await apiRequest("/api/admin/verify", {
       method: "POST",
       body: JSON.stringify({ token }),
     });
     adminToken = token;
-    adminPassword.value = "";
     adminStatusMessage.textContent = "Admin controls enabled for this page session.";
     adminStatusMessage.classList.remove("error");
+    adminSignIn.textContent = "Sign out";
     renderProblems();
+    adminSignIn.disabled = false;
   } catch (error) {
     adminStatusMessage.textContent = error.message;
     adminStatusMessage.classList.add("error");
-  } finally {
-    button.disabled = false;
+    adminSignIn.disabled = false;
   }
 });
 

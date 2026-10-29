@@ -14,7 +14,7 @@ Set the local admin password in the ignored `.env` file. The server loads it aut
 
 ## Render deployment
 
-Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. If the service reports that admin access is not configured, open the web service in the Render Dashboard, go to **Environment**, add `ADMIN_TOKEN` with a long, unique secret value, then save the changes and redeploy. Enter that same value in the problem page's admin password field.
+Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. If the service reports that admin access is not configured, open the web service in the Render Dashboard, go to **Environment**, add `ADMIN_TOKEN` with a long, unique secret value, then save the changes and redeploy. Click **Admin sign in** on the problem page and enter that value in the browser password prompt. The token is not displayed in the page or saved to browser storage.
 
 The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
 
