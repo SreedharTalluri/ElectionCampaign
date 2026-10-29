@@ -2,22 +2,21 @@
 
 ## Local development
 
-The server requires a PostgreSQL database. Create a database, install the Node.js dependencies, and set `DATABASE_URL` before starting the server:
+The server requires a PostgreSQL database. Install dependencies, set `DATABASE_URL`, and start the server:
 
 ```powershell
 npm install
 $env:DATABASE_URL = "postgresql://USER:PASSWORD@HOST:5432/DATABASE"
-$env:ADMIN_TOKEN = "admin123"
 npm start
 ```
 
-The server creates the `local_problems` table on startup. Keep database credentials and the admin token out of source control.
+Set the local admin password in the ignored `.env` file. The server loads it automatically. The server creates the `local_problems` table on startup. Never commit `.env` or database credentials.
 
 ## Render deployment
 
-Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. If the service is already deployed and reports “Admin access is not configured,” open the web service in the Render Dashboard, go to **Environment**, add `ADMIN_TOKEN` with a long, unique secret value, then save the changes. Render will restart the service. Enter that same value in the problem page's admin password field.
+Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a free PostgreSQL database, and prompts for `ADMIN_TOKEN`. If the service reports that admin access is not configured, open the web service in the Render Dashboard, go to **Environment**, add `ADMIN_TOKEN` with a long, unique secret value, then save the changes and redeploy. Enter that same value in the problem page's admin password field.
 
-For local development, set `ADMIN_TOKEN` to a long, unique secret before starting the server. Never use the example placeholder as a real password or commit actual secrets to the repository. The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
+The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
 
 Problem reports can include a mobile number and email address. These contact details are optional, but any details submitted are visible to all visitors. Administrators can assign a report to an MLA by entering the MLA's name in the report editor.
 

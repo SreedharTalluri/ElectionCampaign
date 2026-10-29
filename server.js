@@ -2,6 +2,7 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const { createHash, timingSafeEqual } = require("node:crypto");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const { Pool } = require("pg");
 
 const root = __dirname;
