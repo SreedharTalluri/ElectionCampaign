@@ -232,47 +232,69 @@ function renderProblems() {
     return;
   }
 
+  const tableWrapper = makeElement("div", "problem-table-wrap");
+  const table = makeElement("table", "problem-table");
+  const caption = makeElement("caption", "visually-hidden", "Local problems with contact details, assignment, and status");
+  const header = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  ["Problem", "Division", "Category", "Contact", "Status", "Assigned MLA", "Actions"].forEach((label) => {
+    headerRow.append(makeElement("th", "", label));
+  });
+  header.append(headerRow);
+  const body = document.createElement("tbody");
+
   [...visibleProblems]
     .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
     .forEach((problem) => {
-      const entry = makeElement("article", "problem-entry");
-      const heading = makeElement("h3", "", problem.title);
-      const meta = makeElement("div", "problem-entry-meta");
-      meta.append(
-        makeElement("span", "problem-category", problem.category),
-        makeElement("span", "", problem.division || "Division not specified"),
-      );
-      if (problem.location) meta.append(makeElement("span", "", problem.location));
-      const date = new Date(problem.createdAt);
-      meta.append(makeElement("time", "", Number.isNaN(date.getTime()) ? "" : date.toLocaleString()));
-      const status = makeElement("span", "problem-status-badge", problem.status);
-      const assignment = makeElement("p", "problem-assignment");
-      assignment.append(makeElement("strong", "", "Assigned MLA: "));
-      assignment.append(document.createTextNode(problem.assignedMla || "Not assigned"));
+      const row = document.createElement("tr");
+      const titleCell = document.createElement("th");
+      titleCell.scope = "row";
+      titleCell.append(makeElement("span", "problem-table-title", problem.title));
+      titleCell.append(makeElement("span", "problem-table-description", problem.description));
+      const divisionCell = makeElement("td", "", problem.division || "Division not specified");
+      if (problem.location) divisionCell.append(makeElement("span", "problem-table-location", problem.location));
+      const categoryCell = makeElement("td", "problem-category", problem.category);
+
+      const contactCell = document.createElement("td");
       const contacts = makeElement("div", "problem-contacts");
       addContactLink(contacts, "Mobile", problem.mobileNumber, `tel:${problem.mobileNumber.replace(/[^\d+]/g, "")}`);
       addContactLink(contacts, "Email", problem.emailAddress, `mailto:${problem.emailAddress}`);
+      if (!problem.mobileNumber && !problem.emailAddress) contacts.textContent = "Not provided";
+      contactCell.append(contacts);
 
+      const statusCell = document.createElement("td");
+      statusCell.append(makeElement("span", "problem-status-badge", problem.status));
+      const assignmentCell = document.createElement("td");
+      assignmentCell.textContent = problem.assignedMla || "Not assigned";
+
+      const actionsCell = document.createElement("td");
+      const actions = makeElement("div", "problem-actions");
       const details = makeElement("details", "problem-edit");
       details.open = false;
-      const summary = makeElement("summary", "", "Edit problem");
+      const summary = makeElement("summary", "", "Edit");
       summary.setAttribute("aria-disabled", String(!adminToken));
       if (!adminToken) summary.classList.add("disabled");
       summary.addEventListener("click", (event) => {
         if (!adminToken) event.preventDefault();
       });
       details.append(summary, createEditForm(problem, details));
-      const removeButton = makeElement("button", "problem-delete", "Remove");
+      const removeButton = makeElement("button", "problem-delete", "Delete");
       removeButton.type = "button";
       removeButton.disabled = !adminToken;
-      removeButton.setAttribute("aria-label", `Remove issue: ${problem.title}`);
+      removeButton.setAttribute("aria-label", `Delete issue: ${problem.title}`);
       removeButton.addEventListener("click", () => removeProblem(problem.id));
-      const actions = makeElement("div", "problem-actions");
       actions.append(details, removeButton);
-      entry.append(heading, meta, status, assignment, contacts);
-      entry.append(makeElement("p", "problem-description", problem.description), actions);
-      problemList.append(entry);
+      actionsCell.append(actions);
+
+      const date = new Date(problem.createdAt);
+      titleCell.append(makeElement("time", "problem-table-date", Number.isNaN(date.getTime()) ? "" : date.toLocaleString()));
+      row.append(titleCell, divisionCell, categoryCell, contactCell, statusCell, assignmentCell, actionsCell);
+      body.append(row);
     });
+
+  table.append(caption, header, body);
+  tableWrapper.append(table);
+  problemList.append(tableWrapper);
 }
 
 async function loadProblems() {
