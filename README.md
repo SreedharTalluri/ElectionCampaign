@@ -18,7 +18,7 @@ Deploy the Blueprint in `render.yaml`. It provisions the Node web service and a 
 
 The admin token is required to edit problem details, assign an MLA, or delete problems; submissions and viewing remain public.
 
-Problem reports can include a mobile number and email address. These contact details are optional, but any details submitted are visible to all visitors. Administrators can assign a report to an MLA by entering the MLA's name in the report editor.
+Problem reports can include an optional mobile number and email address. Phone input is formatted as it is typed. Public visitors see masked contact details; admins who sign in can view full details. Administrators can assign a report to an MLA by entering the MLA's name in the report editor.
 
 Render's free PostgreSQL plan is temporary and is not suitable for long-term data retention. For durable storage, upgrade the database to a paid Render PostgreSQL plan or use another persistent PostgreSQL provider and set the service's `DATABASE_URL` environment variable to its connection string.
 

@@ -40,6 +40,13 @@ function showStatus(message, isError = false) {
   statusMessage.classList.toggle("error", isError);
 }
 
+function formatPhoneNumber(value) {
+  const hasPlusPrefix = value.trimStart().startsWith("+");
+  const digits = value.replace(/\D/g, "").slice(0, 15);
+  const groups = digits.match(/.{1,3}/g) || [];
+  return `${hasPlusPrefix ? "+" : ""}${groups.join(" ")}`;
+}
+
 function makeElement(tag, className, text) {
   const element = document.createElement(tag);
   if (className) element.className = className;
@@ -141,6 +148,11 @@ function addContactLink(container, label, value, href) {
   if (!value) return;
   const item = makeElement("p", "problem-contact");
   item.append(makeElement("strong", "", `${label}: `));
+  if (value.includes("***")) {
+    item.append(document.createTextNode(value));
+    container.append(item);
+    return;
+  }
   const link = makeElement("a", "", value);
   link.href = href;
   item.append(link);
@@ -300,7 +312,7 @@ async function loadProblems() {
   problemList.replaceChildren(makeElement("p", "problem-empty", "Loading problems…"));
   try {
     await migrateBrowserProblems();
-    problems = await apiRequest("/api/problems");
+    problems = await apiRequest("/api/problems", { admin: Boolean(adminToken) });
     renderProblems();
   } catch (error) {
     console.error("Unable to load problems from the database:", error);
@@ -383,13 +395,19 @@ adminSignIn.addEventListener("click", async () => {
     adminStatusMessage.textContent = "Admin controls enabled for this page session.";
     adminStatusMessage.classList.remove("error");
     adminSignIn.textContent = "Sign out";
-    renderProblems();
+    await loadProblems();
     adminSignIn.disabled = false;
   } catch (error) {
     adminStatusMessage.textContent = error.message;
     adminStatusMessage.classList.add("error");
     adminSignIn.disabled = false;
   }
+});
+
+document.querySelector("#problem-mobile").addEventListener("input", (event) => {
+  const input = event.currentTarget;
+  const formatted = formatPhoneNumber(input.value);
+  if (input.value !== formatted) input.value = formatted;
 });
 
 form.addEventListener("submit", async (event) => {
@@ -418,6 +436,7 @@ form.addEventListener("submit", async (event) => {
     const savedProblem = await apiRequest("/api/problems", {
       method: "POST",
       body: JSON.stringify(issue),
+      admin: Boolean(adminToken),
     });
     problems.unshift(savedProblem);
     form.reset();

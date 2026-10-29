@@ -184,6 +184,18 @@ function mapProblem(row) {
   };
 }
 
+function maskPhoneNumber(phone) {
+  const digits = phone.replace(/\D/g, "");
+  const visibleDigits = digits.slice(-4);
+  return `${phone.trim().startsWith("+") ? "+" : ""}${"*".repeat(Math.max(4, digits.length - visibleDigits.length))} ${visibleDigits}`;
+}
+
+function maskEmailAddress(email) {
+  const [name, domain] = email.split("@");
+  if (!name || !domain) return "***";
+  return `${name[0]}***@${domain}`;
+}
+
 async function handleApi(request, response, pathname) {
   if (pathname === "/api/admin/verify" && request.method === "POST") {
     if (!process.env.ADMIN_TOKEN) {
@@ -201,19 +213,32 @@ async function handleApi(request, response, pathname) {
   }
 
   if (pathname === "/api/problems" && request.method === "GET") {
+    const authorization = request.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    const showFullContacts = hasValidAdminToken(token);
     const result = await pool.query(
       `SELECT id, title, category, division, location, description, mobile_number, email_address,
               assigned_mla, status, created_at
        FROM local_problems
        ORDER BY created_at DESC, id DESC`,
     );
-    sendJson(response, 200, result.rows.map(mapProblem));
+    const records = result.rows.map(mapProblem);
+    if (!showFullContacts) {
+      records.forEach((problem) => {
+        if (problem.mobileNumber) problem.mobileNumber = maskPhoneNumber(problem.mobileNumber);
+        if (problem.emailAddress) problem.emailAddress = maskEmailAddress(problem.emailAddress);
+      });
+    }
+    sendJson(response, 200, records);
     return;
   }
 
   if (pathname === "/api/problems" && request.method === "POST") {
     const body = await readJsonBody(request);
     const isLegacyMigration = Boolean(body && body.legacyId);
+    const authorization = request.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    const showFullContacts = hasValidAdminToken(token);
     const problem = validateProblem(body, { allowLegacy: isLegacyMigration });
     problem.status = "Open";
     problem.assignedMla = "";
@@ -240,7 +265,12 @@ async function handleApi(request, response, pathname) {
         problem.createdAt,
       ],
     );
-    sendJson(response, 201, mapProblem(result.rows[0]));
+    const savedProblem = mapProblem(result.rows[0]);
+    if (!showFullContacts) {
+      if (savedProblem.mobileNumber) savedProblem.mobileNumber = maskPhoneNumber(savedProblem.mobileNumber);
+      if (savedProblem.emailAddress) savedProblem.emailAddress = maskEmailAddress(savedProblem.emailAddress);
+    }
+    sendJson(response, 201, savedProblem);
     return;
   }
 
